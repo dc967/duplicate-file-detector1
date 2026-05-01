@@ -43,7 +43,10 @@ function UploadFile() {
           </div>
 
           {/* Scan Button */}
-          <button className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-all">
+          <button
+            onClick={handleScan}
+            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-all"
+          >
             Start Scan
           </button>
         </div>
@@ -61,9 +64,9 @@ function UploadFile() {
             <label className="text-xs font-medium text-gray-600 mb-1 block">
               Hash Method
             </label>
-            <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400">
+            <select defaultValue="sha256" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400">
               <option>MD5 (Fast)</option>
-              <option selected>SHA-256 (Recommended)</option>
+              <option value="sha256">SHA-256 (Recommended)</option>
               <option>SHA-512 (Secure)</option>
             </select>
           </div>

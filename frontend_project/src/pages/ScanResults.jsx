@@ -36,25 +36,27 @@ function ScanResult(){
 
     return (
         <div>
-   <div className="flex gap-2 mb-4">
-     {tabs.map((tab) =>(
-       <button
-         key={tab.value}
-         onClick={() => setActiveTab(tab.value)}
-        className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all
+   <div className="overflow-x-auto mb-4">
+    <div className="flex gap-2 min-w-max">
+      {tabs.map((tab) =>(
+        <button
+          key={tab.value}
+          onClick={() => setActiveTab(tab.value)}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
               ${active === tab.value
                 ? 'bg-white text-gray-800 shadow-sm border border-gray-200'
                 : 'text-gray-500 hover:bg-white hover:text-gray-700'
               }`}
-       >
-         {tab.label} ({tab.count})
-       </button>
-     ))}
+        >
+          {tab.label} ({tab.count})
+        </button>
+      ))}
+    </div>
    </div>
 
 
     <DuplicateTable data={filteredData} />
-    /</div>
+    </div>
     )  
 }
 export default ScanResult

@@ -50,8 +50,8 @@ const recentScans = [
                      >
                        
                         <td className="px-5 py-3 text-sm font-medium text-gray-700">{scan.path}</td>
-                        <td className="px-5 py-3 text-sm text-gray-500"></td>
-                         <td className="px-5 py-3 text-sm text-gray-500"></td>
+                        <td className="px-5 py-3 text-sm text-gray-500">{scan.files}</td>
+                         <td className="px-5 py-3 text-sm text-gray-500">{scan.dups}</td>
                          <td className="px-5 py-3">
                            <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusStyles[scan.status]}`}>
                               {scan.status}
