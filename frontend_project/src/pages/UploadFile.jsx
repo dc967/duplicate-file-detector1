@@ -7,7 +7,6 @@ function UploadFile() {
   const [recursive, setRecursive] = useState(true)
   const [skipSystem, setSkipSystem] = useState(true)
   const [isScanning, setIsScanning] = useState(false)
-  const [progress, setProgress] = useState(0)
 
   const handleFileSelect = (files) => {
     console.log('Files selected:', files)
@@ -65,9 +64,9 @@ function UploadFile() {
               Hash Method
             </label>
             <select defaultValue="sha256" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400">
-              <option>MD5 (Fast)</option>
+              <option value="md5">MD5 (Fast)</option>
               <option value="sha256">SHA-256 (Recommended)</option>
-              <option>SHA-512 (Secure)</option>
+              <option value="sha512">SHA-512 (Secure)</option>
             </select>
           </div>
 

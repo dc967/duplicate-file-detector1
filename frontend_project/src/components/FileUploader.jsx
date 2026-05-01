@@ -1,7 +1,9 @@
 
 import { Upload } from 'lucide-react'
+import { useRef } from 'react'
 
 function FileUploader({ onFileSelect }){
+  const inputRef = useRef(null)
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -16,7 +18,7 @@ function FileUploader({ onFileSelect }){
    }
 
    const handleClick = () => {
-    document.getElementById('file-input').click()
+    inputRef.current?.click()
    }
  
    const handleFileChange = (e) => {
@@ -48,7 +50,7 @@ function FileUploader({ onFileSelect }){
         Drop files here
       </h3>
        <p className="text-xs text-gray-400 ">
-         or <span className="text-blue-500 font-semibold">browes from computer</span>
+         or <span className="text-blue-500 font-semibold">browse from computer</span>
        </p>
         <p className="text-xs text-gray-300 mt-2">
             Supports all file . Max 10 GB
@@ -57,7 +59,7 @@ function FileUploader({ onFileSelect }){
          
         { /*Hidden Input*/ }
         <input 
-         id="file-input"
+         ref={inputRef}
          type = "file"
          multiple
          className="hidden"

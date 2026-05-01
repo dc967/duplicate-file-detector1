@@ -3,6 +3,29 @@ import { useState } from 'react'
 import { Trash2, Plus } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 
+function Toggle({ value, onChange }) {
+  return (
+    <button
+      onClick={() => onChange(!value)}
+      className={`w-10 h-5 rounded-full transition-all relative flex-shrink-0 ${value ? 'bg-blue-500' : 'bg-gray-200'}`}
+    >
+      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${value ? 'left-5' : 'left-0.5'}`}></span>
+    </button>
+  )
+}
+
+function SettingRow({ title, desc, value, onChange, border = true }) {
+  return (
+    <div className={`flex items-center justify-between py-3 ${border ? 'border-b border-gray-50' : ''}`}>
+      <div>
+        <p className="text-sm font-medium text-gray-700">{title}</p>
+        <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+      </div>
+      <Toggle value={value} onChange={onChange} />
+    </div>
+  )
+}
+
 function Settings() {
   
   const [moveToTrash, setMoveToTrash] = useState(true)
@@ -34,27 +57,6 @@ function Settings() {
       setNewPath('')
     }
   }
-
-
-  const Toggle = ({ value, onChange }) => (
-    <button
-      onClick={() => onChange(!value)}
-      className={`w-10 h-5 rounded-full transition-all relative flex-shrink-0 ${value ? 'bg-blue-500' : 'bg-gray-200'}`}
-    >
-      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${value ? 'left-5' : 'left-0.5'}`}></span>
-    </button>
-  )
-
-
-  const SettingRow = ({ title, desc, value, onChange, border = true }) => (
-    <div className={`flex items-center justify-between py-3 ${border ? 'border-b border-gray-50' : ''}`}>
-      <div>
-        <p className="text-sm font-medium text-gray-700">{title}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
-      </div>
-      <Toggle value={value} onChange={onChange} />
-    </div>
-  )
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

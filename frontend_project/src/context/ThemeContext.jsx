@@ -17,11 +17,11 @@ useEffect(() => {
 }, [darkMode])
 
 
- const togglrTheme = () => {
+ const toggleTheme = () => {
     setDarkMode(!darkMode)
  }
 return (
-  <ThemeContext.Provider value={{ darkMode, togglrTheme }}>
+  <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
     {children}
   </ThemeContext.Provider>
 

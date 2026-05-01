@@ -26,7 +26,7 @@ function Login() {
       } else {
         setError('Invalid email or password!')
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong!')
     } finally {
       setLoading(false)

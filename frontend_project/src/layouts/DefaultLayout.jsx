@@ -16,7 +16,7 @@ function DefaultLayout() {
   const location = useLocation()
   const title = pageTitles[location.pathname] || 'Dashboard'
   const { darkMode, toggleTheme } = useTheme()
-  const { logout, user } = useAuth()
+  const { logout } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
