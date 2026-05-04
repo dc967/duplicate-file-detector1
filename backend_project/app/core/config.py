@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # CORS
     FRONTEND_URL: str = "http://localhost:5173"
 
+    # MONGODB
+    MONGODB_URL: str
+    MONGODB_DB_NAME: str = "dupliscan"
+
     @field_validator("DEBUG", mode="before")
     @classmethod
     def parse_debug(cls, value):

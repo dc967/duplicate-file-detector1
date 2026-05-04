@@ -2,11 +2,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.routes import auth, scan, files, settings as settings_router
+from app.core.database import connect_db, close_db
+from contextlib import asynccontextmanager
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    
+    await connect_db()
+    yield
 
+    await close_db()
 
 app = FastAPI(
     title=settings.APP_NAME,
+    lifespan=lifespan,
     description="Duplicate File Detector API",
     version="1.0.0",
     docs_url="/docs",
