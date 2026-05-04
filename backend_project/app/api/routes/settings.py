@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends
 from app.core.dependencies import get_current_user
+from app.core.database import get_db
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
 
-current_settings = {
+DEFAULT_SETTINGS = {
     "hash_method": "sha256",
     "recursive": True,
     "skip_system": True,
@@ -19,13 +20,26 @@ current_settings = {
     ],
 }
 
+
+
 @router.get("")
 async def get_settings(
     current_user: dict = Depends(get_current_user)
 ):
     """Settings lao"""
     _ = current_user
-    return current_settings
+    db = get_db()
+
+    if db is None:
+        return DEFAULT_SETTINGS
+
+    settings = await db.settings.find_one(
+        {"type": "app_settings"},
+        {"_id": 0}
+    )
+
+    return settings if settings else DEFAULT_SETTINGS
+
 
 
 @router.post("")
@@ -35,11 +49,18 @@ async def save_settings(
 ):
     """Settings save karo"""
     _ = current_user
-    current_settings.update(new_settings)
+    db = get_db()
+
+    if db is not None:
+        await db.settings.update_one(
+            {"type": "app_settings"},
+            {"$set": {**new_settings, "type": "app_settings"}},
+            upsert=True
+        )
+
     return {
         "success": True,
         "message": "Settings saved!",
-        "settings": current_settings
     }
 
 
@@ -50,8 +71,11 @@ async def clear_history(
 ):
     """Scan history clear karo"""
     _ = current_user
-    from app.api.routes.scan import scan_history
-    scan_history.clear()
+    db = get_db()
+
+    if db is not None:
+        await db.scans.delete_many({})
+
     return {
         "success": True,
         "message": "Scan history cleared!"
@@ -65,26 +89,20 @@ async def reset_settings(
 ):
     """Settings reset karo"""
     _ = current_user
-    current_settings.update({
-        "hash_method": "sha256",
-        "recursive": True,
-        "skip_system": True,
-        "min_file_size": 1024,
-        "move_to_trash": True,
-        "auto_scan": False,
-        "email_notifications": False,
-        "excluded_paths": [
-            "/System/Library",
-            "/usr/local/bin",
-            "/node_modules/**",
-        ],
-    })
+    db = get_db()
+
+    if db is not None:
+        await db.settings.update_one(
+            {"type": "app_settings"},
+            {"$set": {**DEFAULT_SETTINGS, "type": "app_settings"}},
+            upsert=True
+        )
+
     return {
         "success": True,
         "message": "Settings reset!",
-        "settings": current_settings
+        "settings": DEFAULT_SETTINGS
     }
-
 
 
 @router.get("/health")

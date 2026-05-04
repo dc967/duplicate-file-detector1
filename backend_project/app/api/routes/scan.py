@@ -1,17 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-
 from app.core.dependencies import get_current_user
 from app.schemas.scan import ScanProgress, ScanRequest, ScanResponse
 from app.services.scanner import get_scan_progress, scan_directory
+from app.core.database import get_db
+from datetime import datetime
 
 router = APIRouter(prefix="/scan", tags=["Scanner"])
 
 
-scan_history = []
 
-
-
-@router.post("/start", response_model=ScanResponse)
+@router.post("/start")
 async def start_scan(
     request: ScanRequest,
     current_user: dict = Depends(get_current_user),
@@ -28,17 +26,20 @@ async def start_scan(
             min_file_size=request.min_file_size,
         )
 
-       
-        scan_history.append({
-            "scan_id": result["scan_id"],
-            "path": result["path"],
-            "status": result["status"],
-            "total_files": result["stats"]["total_files"],
-            "duplicates_found": result["stats"]["total_duplicates"],
-            "scanned_at": result["scanned_at"],
-        })
+        # MongoDB mein save karo
+        db = get_db()
+        if db is not None:
+            await db.scans.insert_one({
+                "scan_id": result["scan_id"],
+                "path": result["path"],
+                "status": result["status"],
+                "stats": result["stats"],
+                "scanned_at": result["scanned_at"],
+                "completed_at": result.get("completed_at"),
+                "created_at": datetime.utcnow(),
+            })
 
-        return ScanResponse(**result)
+        return result
 
     except FileNotFoundError:
         raise HTTPException(
@@ -75,18 +76,32 @@ async def get_stats(
     """Overall stats do"""
     _ = current_user
 
-    if not scan_history:
+    db = get_db()
+    if db is None:
         return {
             "total_files": 0,
             "total_duplicates": 0,
             "total_scans": 0,
         }
 
-    last = scan_history[-1]
+    # MongoDB se last scan lao
+    last_scan = await db.scans.find_one(
+        sort=[("created_at", -1)]
+    )
+
+    if not last_scan:
+        return {
+            "total_files": 0,
+            "total_duplicates": 0,
+            "total_scans": 0,
+        }
+
+    total_scans = await db.scans.count_documents({})
+
     return {
-        "total_files": last["total_files"],
-        "total_duplicates": last["duplicates_found"],
-        "total_scans": len(scan_history),
+        "total_files": last_scan["stats"]["total_files"],
+        "total_duplicates": last_scan["stats"]["total_duplicates"],
+        "total_scans": total_scans,
     }
 
 
@@ -97,11 +112,23 @@ async def get_history(
 ):
     """Scan history do"""
     _ = current_user
-    return {"history": scan_history}
 
+    db = get_db()
+    if db is None:
+        return {"history": []}
+
+    # MongoDB se history lao
+    cursor = db.scans.find(
+        {},
+        {"_id": 0}  # _id mat bhejo
+    ).sort("created_at", -1).limit(10)
+
+    history = await cursor.to_list(length=10)
+
+    return {"history": history}
 
 
 @router.get("/health")
 async def scan_health():
-    """Simple route health check."""
+    """Health check"""
     return {"status": "ok", "service": "scan"}
