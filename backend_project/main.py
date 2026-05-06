@@ -25,11 +25,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        settings.FRONTEND_URL,
-        "https://duplicate-file-detector1.vercel.app",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],  # ← Yeh change karo
+    allow_credentials=False,  # ← Yeh bhi change karo
     allow_methods=["*"],
     allow_headers=["*"],
 )
