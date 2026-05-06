@@ -44,6 +44,14 @@ export const scanAPI = {
   startScan: (path, options) =>
     API.post('/scan/start', { path, ...options }),
 
+   scanUploadedFiles: (files) => {
+    const formData = new FormData()
+    files.forEach((file) => formData.append('files', file))
+    return API.post('/scan/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+
   getProgress: () =>
     API.get('/scan/progress'),
 

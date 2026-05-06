@@ -3,6 +3,7 @@ import ScanProgress from '../components/ScanProgress'
 import { useState } from 'react'
 import { useScan } from '../context/ScanContext'
 import { useNavigate } from 'react-router-dom'
+import { scanAPI } from '../services/api'
 
 function UploadFile() {
   const [path, setPath] = useState('')
@@ -10,29 +11,51 @@ function UploadFile() {
   const [skipSystem, setSkipSystem] = useState(true)
   const [hashMethod, setHashMethod] = useState('sha256')
   const [error, setError] = useState('')
+  const [selectedFiles, setSelectedFiles] = useState([])
+  const [isScanning, setIsScanning] = useState(false)
 
-  const { startScan, isScanning, progress } = useScan()
+  const { startScan, fetchStats, fetchHistory } = useScan()
   const navigate = useNavigate()
 
+  // File select hone pe
   const handleFileSelect = (files) => {
-    console.log('Files selected:', files)
+    setSelectedFiles(Array.from(files))
+    setError('')
   }
 
+  // Start Scan
   const handleScan = async () => {
-    if (!path.trim()) {
-      setError('Please enter a directory path!')
-      return
-    }
     setError('')
+    setIsScanning(true)
+
     try {
-      await startScan(path, {
-        recursive,
-        skip_system: skipSystem,
-        hash_method: hashMethod,
-      })
-      navigate('/results')
+      let result
+
+      if (selectedFiles.length > 0) {
+        // Files uploaded hain
+        const response = await scanAPI.scanUploadedFiles(selectedFiles)
+        result = response.data
+      } else if (path.trim()) {
+        // Directory path diya hai
+        result = await startScan(path, {
+          recursive,
+          skip_system: skipSystem,
+          hash_method: hashMethod,
+        })
+      } else {
+        setError('Please select files or enter a directory path!')
+        setIsScanning(false)
+        return
+      }
+
+      await fetchStats()
+      await fetchHistory()
+      navigate('/results', { state: { scanResult: result } })
+
     } catch (err) {
       setError(err.response?.data?.detail || 'Scan failed!')
+    } finally {
+      setIsScanning(false)
     }
   }
 
@@ -46,6 +69,15 @@ function UploadFile() {
         </div>
         <div className="p-5">
           <FileUploader onFileSelect={handleFileSelect} />
+
+          {/* Selected Files Count */}
+          {selectedFiles.length > 0 && (
+            <div className="mt-3 bg-blue-50 rounded-lg px-3 py-2">
+              <p className="text-xs text-blue-600 font-medium">
+                ✅ {selectedFiles.length} files selected
+              </p>
+            </div>
+          )}
 
           {/* Directory Path */}
           <div className="mt-4">
@@ -61,12 +93,10 @@ function UploadFile() {
             />
           </div>
 
-          {/* Error */}
           {error && (
             <p className="text-xs text-red-500 mt-2">{error}</p>
           )}
 
-          {/* Scan Button */}
           <button
             onClick={handleScan}
             disabled={isScanning}
@@ -83,8 +113,6 @@ function UploadFile() {
           <h3 className="text-sm font-semibold text-gray-800">Scan Options</h3>
         </div>
         <div className="p-5">
-
-          {/* Hash Method */}
           <div className="mb-4">
             <label className="text-xs font-medium text-gray-600 mb-1 block">Hash Method</label>
             <select
@@ -98,7 +126,6 @@ function UploadFile() {
             </select>
           </div>
 
-          {/* Recursive Toggle */}
           <div className="flex items-center justify-between py-3 border-b border-gray-50">
             <div>
               <p className="text-sm font-medium text-gray-700">Recursive Scan</p>
@@ -112,7 +139,6 @@ function UploadFile() {
             </button>
           </div>
 
-          {/* Skip System Files Toggle */}
           <div className="flex items-center justify-between py-3">
             <div>
               <p className="text-sm font-medium text-gray-700">Skip System Files</p>
@@ -125,7 +151,6 @@ function UploadFile() {
               <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${skipSystem ? 'left-5' : 'left-0.5'}`}></span>
             </button>
           </div>
-
         </div>
       </div>
 
@@ -133,10 +158,10 @@ function UploadFile() {
       {isScanning && (
         <div className="col-span-2">
           <ScanProgress
-            progress={progress}
+            progress={50}
             scanned={0}
-            total={0}
-            currentFile=""
+            total={selectedFiles.length}
+            currentFile="Processing..."
             isScanning={isScanning}
           />
         </div>

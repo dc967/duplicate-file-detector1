@@ -8,20 +8,15 @@ export function ScanProvider({ children }) {
   const [stats, setStats] = useState(null)
   const [history, setHistory] = useState([])
   const [isScanning, setIsScanning] = useState(false)
-  const [progress, setProgress] = useState(0)
 
   const startScan = async (path, options) => {
     setIsScanning(true)
-    setProgress(0)
     try {
       const response = await scanAPI.startScan(path, options)
       setScanResults(response.data)
-      await fetchStats()
-      await fetchHistory()
       return response.data
     } finally {
       setIsScanning(false)
-      setProgress(100)
     }
   }
 
@@ -46,10 +41,10 @@ export function ScanProvider({ children }) {
   return (
     <ScanContext.Provider value={{
       scanResults,
+      setScanResults,
       stats,
       history,
       isScanning,
-      progress,
       startScan,
       fetchStats,
       fetchHistory,

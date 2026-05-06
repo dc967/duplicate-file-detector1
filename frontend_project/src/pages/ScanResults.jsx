@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import DuplicateTable from '../components/DuplicateTable'
 import { useScan } from '../context/ScanContext'
 
@@ -13,15 +14,19 @@ const tabs = [
 function ScanResults() {
   const [activeTab, setActiveTab] = useState('all')
   const { scanResults } = useScan()
+  const location = useLocation()
 
-  const allData = scanResults?.duplicates?.map((group, index) => ({
+  // Location state se ya scanResults se data lo
+  const resultData = location.state?.scanResult || scanResults
+
+  const allData = resultData?.duplicates?.map((group, index) => ({
     id: index + 1,
     name: group.copies[0]?.name || 'Unknown',
     ext: group.copies[0]?.extension || 'FILE',
     size: group.size_formatted || '0 KB',
     copies: group.copies_count,
     hash: group.hash,
-    path: group.copies[0]?.path || '',
+    path: group.copies[0]?.path || 'Uploaded',
     type: group.file_type,
   })) || []
 
@@ -51,12 +56,12 @@ function ScanResults() {
       {/* No Results */}
       {allData.length === 0 && (
         <div className="bg-white border border-gray-200 rounded-xl p-10 text-center">
-          <p className="text-gray-400 text-sm">No scan results yet!</p>
-          <p className="text-gray-300 text-xs mt-1">Go to Upload page and start a scan</p>
+          <p className="text-gray-400 text-sm">No duplicates found!</p>
+          <p className="text-gray-300 text-xs mt-1">Upload files or scan a directory</p>
         </div>
       )}
 
-      {/* Duplicate Table */}
+      {/* Table */}
       {allData.length > 0 && (
         <DuplicateTable data={filteredData} />
       )}
