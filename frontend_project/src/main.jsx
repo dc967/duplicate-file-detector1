@@ -1,17 +1,20 @@
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import './index.css'
+import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
+import { ScanProvider } from './context/ScanContext'
 import App from './App.jsx'
-import { AuthProvider } from './context/AuthContext.jsx'
-import { ThemeProvider } from './context/ThemeContext.jsx'
 
 createRoot(document.getElementById('root')).render(
-     <StrictMode>
+  <StrictMode>
     <BrowserRouter>
-      <ThemeProvider>      
+      <ThemeProvider>
         <AuthProvider>
-          <App />
+          <ScanProvider>
+            <App />
+          </ScanProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

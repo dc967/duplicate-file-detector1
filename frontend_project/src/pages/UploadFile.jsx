@@ -1,19 +1,39 @@
 import FileUploader from '../components/FileUploader'
-import { useState } from 'react'
 import ScanProgress from '../components/ScanProgress'
+import { useState } from 'react'
+import { useScan } from '../context/ScanContext'
+import { useNavigate } from 'react-router-dom'
 
 function UploadFile() {
   const [path, setPath] = useState('')
   const [recursive, setRecursive] = useState(true)
   const [skipSystem, setSkipSystem] = useState(true)
-  const [isScanning, setIsScanning] = useState(false)
+  const [hashMethod, setHashMethod] = useState('sha256')
+  const [error, setError] = useState('')
+
+  const { startScan, isScanning, progress } = useScan()
+  const navigate = useNavigate()
 
   const handleFileSelect = (files) => {
     console.log('Files selected:', files)
   }
 
-  const handleScan =() => {
-    setIsScanning(true)
+  const handleScan = async () => {
+    if (!path.trim()) {
+      setError('Please enter a directory path!')
+      return
+    }
+    setError('')
+    try {
+      await startScan(path, {
+        recursive,
+        skip_system: skipSystem,
+        hash_method: hashMethod,
+      })
+      navigate('/results')
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Scan failed!')
+    }
   }
 
   return (
@@ -41,12 +61,18 @@ function UploadFile() {
             />
           </div>
 
+          {/* Error */}
+          {error && (
+            <p className="text-xs text-red-500 mt-2">{error}</p>
+          )}
+
           {/* Scan Button */}
           <button
             onClick={handleScan}
-            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-all"
+            disabled={isScanning}
+            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white text-sm font-semibold py-2.5 rounded-lg transition-all"
           >
-            Start Scan
+            {isScanning ? 'Scanning...' : 'Start Scan'}
           </button>
         </div>
       </div>
@@ -60,10 +86,12 @@ function UploadFile() {
 
           {/* Hash Method */}
           <div className="mb-4">
-            <label className="text-xs font-medium text-gray-600 mb-1 block">
-              Hash Method
-            </label>
-            <select defaultValue="sha256" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400">
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Hash Method</label>
+            <select
+              value={hashMethod}
+              onChange={(e) => setHashMethod(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+            >
               <option value="md5">MD5 (Fast)</option>
               <option value="sha256">SHA-256 (Recommended)</option>
               <option value="sha512">SHA-512 (Secure)</option>
@@ -101,27 +129,18 @@ function UploadFile() {
         </div>
       </div>
 
-
-     {/* ScanProgress — Start Scan ke baad dikhega */}
+      {/* Scan Progress */}
       {isScanning && (
         <div className="col-span-2">
           <ScanProgress
-            progress={65}
-            scanned={8432}
-            total={12842}
-            currentFile="vacation_photo.jpg"
+            progress={progress}
+            scanned={0}
+            total={0}
+            currentFile=""
             isScanning={isScanning}
           />
         </div>
       )}
-
-
-
-
-
-
-
-
 
     </div>
   )

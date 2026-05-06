@@ -1,62 +1,67 @@
-
-import DuplicateTable from "../components/DuplicateTable";
-import { useState } from "react";
-
-const allData = [
-  { id: 1, name: 'vacation_photo.jpg', ext: 'JPG', size: '3.2 MB', copies: 4, hash: 'a1b2c3...', path: '/Documents/Photos', type: 'image' },
-  { id: 2, name: 'project_report.pdf', ext: 'PDF', size: '1.8 MB', copies: 2, hash: 'e5f6g7...', path: '/Downloads', type: 'document' },
-  { id: 3, name: 'birthday_clip.mp4', ext: 'MP4', size: '142 MB', copies: 2, hash: 'i9j0k1...', path: '/Videos', type: 'video' },
-  { id: 4, name: 'screenshot.png', ext: 'PNG', size: '876 KB', copies: 3, hash: 'm3n4o5...', path: '/Desktop', type: 'image' },
-  { id: 5, name: 'resume_final.docx', ext: 'DOCX', size: '244 KB', copies: 2, hash: 'q7r8s9...', path: '/Documents', type: 'document' },
-  { id: 6, name: 'backup.zip', ext: 'ZIP', size: '892 MB', copies: 2, hash: 'u1v2w3...', path: '/Projects', type: 'archive' },
-]
-
+import { useState, useEffect } from 'react'
+import DuplicateTable from '../components/DuplicateTable'
+import { useScan } from '../context/ScanContext'
 
 const tabs = [
-  { label: 'All', value: 'all', count: 6 },
-  { label: 'Images', value: 'image', count: 2 },
-  { label: 'Docs', value: 'document', count: 2 },
-  { label: 'Videos', value: 'video', count: 1 },
-  { label: 'Archives', value: 'archive', count: 1 },
+  { label: 'All', value: 'all' },
+  { label: 'Images', value: 'image' },
+  { label: 'Documents', value: 'document' },
+  { label: 'Videos', value: 'video' },
+  { label: 'Archives', value: 'archive' },
 ]
 
+function ScanResults() {
+  const [activeTab, setActiveTab] = useState('all')
+  const { scanResults } = useScan()
 
-function ScanResult(){
-   const [active, setActiveTab] = useState('all')
+  const allData = scanResults?.duplicates?.map((group, index) => ({
+    id: index + 1,
+    name: group.copies[0]?.name || 'Unknown',
+    ext: group.copies[0]?.extension || 'FILE',
+    size: group.size_formatted || '0 KB',
+    copies: group.copies_count,
+    hash: group.hash,
+    path: group.copies[0]?.path || '',
+    type: group.file_type,
+  })) || []
 
-
-   const filteredData = active === 'all'
+  const filteredData = activeTab === 'all'
     ? allData
-    : allData.filter((item) => item.type === active)
+    : allData.filter((item) => item.type === activeTab)
 
-
-
-
-
-
-    return (
-        <div>
-   <div className="overflow-x-auto mb-4">
-    <div className="flex gap-2 min-w-max">
-      {tabs.map((tab) =>(
-        <button
-          key={tab.value}
-          onClick={() => setActiveTab(tab.value)}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
-              ${active === tab.value
+  return (
+    <div>
+      {/* Tabs */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {tabs.map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setActiveTab(tab.value)}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all
+              ${activeTab === tab.value
                 ? 'bg-white text-gray-800 shadow-sm border border-gray-200'
                 : 'text-gray-500 hover:bg-white hover:text-gray-700'
               }`}
-        >
-          {tab.label} ({tab.count})
-        </button>
-      ))}
-    </div>
-   </div>
+          >
+            {tab.label} ({allData.filter(i => tab.value === 'all' ? true : i.type === tab.value).length})
+          </button>
+        ))}
+      </div>
 
+      {/* No Results */}
+      {allData.length === 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl p-10 text-center">
+          <p className="text-gray-400 text-sm">No scan results yet!</p>
+          <p className="text-gray-300 text-xs mt-1">Go to Upload page and start a scan</p>
+        </div>
+      )}
 
-    <DuplicateTable data={filteredData} />
+      {/* Duplicate Table */}
+      {allData.length > 0 && (
+        <DuplicateTable data={filteredData} />
+      )}
     </div>
-    )  
+  )
 }
-export default ScanResult
+
+export default ScanResults
