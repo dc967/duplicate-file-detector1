@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-// Axios instance banao
+// Axios instance
 const API = axios.create({
   baseURL: BASE_URL,
   timeout: 30000,
@@ -17,7 +17,7 @@ API.interceptors.request.use((config) => {
   return config
 })
 
-// Response interceptor — 401 pe logout karo
+// 401 pe logout karo
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,9 +35,6 @@ export const authAPI = {
   login: (email, password) =>
     API.post('/auth/login', { email, password }),
 
-  logout: () =>
-    API.post('/auth/logout'),
-
   me: () =>
     API.get('/auth/me'),
 }
@@ -45,19 +42,16 @@ export const authAPI = {
 // Scan APIs
 export const scanAPI = {
   startScan: (path, options) =>
-    API.post('/scan', { path, ...options }),
+    API.post('/scan/start', { path, ...options }),
 
-  getResults: () =>
-    API.get('/scan/results'),
+  getProgress: () =>
+    API.get('/scan/progress'),
 
   getStats: () =>
     API.get('/scan/stats'),
 
-  getScanHistory: () =>
+  getHistory: () =>
     API.get('/scan/history'),
-
-  getProgress: () =>
-    API.get('/scan/progress'),
 }
 
 // File APIs
@@ -66,7 +60,7 @@ export const fileAPI = {
     API.delete('/file', { data: { path: filePath } }),
 
   deleteMultiple: (filePaths) =>
-    API.delete('/files', { data: { paths: filePaths } }),
+    API.delete('/file/multiple', { data: { paths: filePaths } }),
 
   moveToTrash: (filePath) =>
     API.post('/file/trash', { path: filePath }),
